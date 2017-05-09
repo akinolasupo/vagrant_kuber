@@ -1,0 +1,9 @@
+---
+- name: install packages
+  yum: name={{ item }} state=installed update_cache=yes
+  with_items: 
+    - git
+    - ntp
+ 
+- name: Make sure a service is running
+  systemd: state=started enabled=yes name=ntpd

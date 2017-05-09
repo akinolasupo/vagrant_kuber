@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+  remote_user: vagrant
+
+  tasks:
+  - blockinfile: 
+                 dest: /etc/hosts 
+                 block: | 
+                        {{ hostvars[item]['ansible_all_ipv4_addresses'][1] }} {{ hostvars[item]['inventory_hostname'] }}
+                 marker: "# {mark} ANSIBLE MANAGED BLOCK {{item}}"
+    with_items: "{{groups['all']}}"
+    
