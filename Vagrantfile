@@ -39,7 +39,7 @@ Vagrant.configure("2") do |config|
         node.vm.provider "virtualbox" do |vb|
           vb.memory = "256"
         end
-        nodes.vm.provision :shell, path: "bootstrap-nodes.sh"
+        node.vm.provision :shell, path: "bootstrap-nodes.sh"
     end
   end
 
