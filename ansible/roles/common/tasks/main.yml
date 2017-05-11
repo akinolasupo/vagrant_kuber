@@ -1,9 +1,77 @@
 ---
+
+- name: Add docker repository
+  yum_repository:
+    name: virt7-docker-common-release
+    description: Docker repository
+    file: virt7-docker-common-release
+    baseurl: https://cbs.centos.org/repos/virt7-docker-common-release/x86_64/os
+    gpgcheck: no
+
 - name: install packages
   yum: name={{ item }} state=installed update_cache=yes
   with_items: 
     - git
     - ntp
+    - kubernetes
+    - docker
+    - etcd
+
+- name: install etcd 
+  yum: name=etcd state=installed update_cache=yes
+  when: inventory_hostname in groups['kubemaster']
+  
+- name: Copy etcd config files
+  template:
+    src: kube_etcd.j2
+    dest: /etc/etcd/etcd.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: inventory_hostname in groups['kubemaster']
+  
+- name: Copy kube config files
+  template:
+    src: kube_config.j2
+    dest: /etc/kubernetes/config
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy kube apiserver file
+  template:
+    src: kube_apiserver.j2
+    dest: /etc/kubernetes/apiserver
+    owner: root
+    group: root
+    mode: 0644
+  when: inventory_hostname in groups['kubemaster']
+
+- name: Copy kubelet file to minions
+  template:
+    src: kubelet.j2
+    dest: /etc/kubernetes/kubelet
+    owner: root
+    group: root
+    mode: 0644
+  when: inventory_hostname in groups['minion']
  
 - name: Make sure a service is running
-  systemd: state=started enabled=yes name=ntpd
+  systemd: state=started enabled=yes name={{ item }}
+  with_items:
+    - ntpd
+    - etcd
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+  when: inventory_hostname in groups['kubemaster']
+
+- name: Make sure a service is running
+  systemd: state=started enabled=yes name={{ item }}
+  with_items:
+    - ntpd
+    - etcd
+    - kube-proxy
+    - kubelet
+    - docker
+  when: inventory_hostname in groups['minion']
