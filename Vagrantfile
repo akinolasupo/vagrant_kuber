@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
       master_config.vm.network :private_network, ip: "10.0.15.11"
       master_config.vm.network "forwarded_port", guest: 80, host: 8080
       master_config.vm.provider "virtualbox" do |vb|
-        vb.memory = "256"
+        vb.memory = "1024"
       end
       master_config.vm.provision :shell, path: "bootstrap-nodes.sh"
   end
@@ -37,7 +37,7 @@ Vagrant.configure("2") do |config|
         node.vm.network :private_network, ip: "10.0.15.2#{i}"
         node.vm.network "forwarded_port", guest: 80, host: "808#{i}"
         node.vm.provider "virtualbox" do |vb|
-          vb.memory = "256"
+          vb.memory = "512"
         end
         node.vm.provision :shell, path: "bootstrap-nodes.sh"
     end
